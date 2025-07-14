@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.whosbookupdate.mapper.MemberMapper">
+    <insert id="insertMember" parameterType="com.example.whosbookupdate.domain.MemberVO">
+        INSERT INTO MEMBER
+        (email,nickname,password,status,introduction)
+        values
+            (#{email},#{nickname},#{password},#{status},#{introduction})
+    </insert>
+
+    <select id="findByMemberId" resultType="com.example.whosbookupdate.domain.MemberVO">
+        SELECT * FROM MEMBER WHERE MEMBER_ID=#{memberId}
+    </select>
+
+
+</mapper>
