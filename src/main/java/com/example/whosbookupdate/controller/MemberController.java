@@ -5,6 +5,7 @@ import com.example.whosbookupdate.dto.MemberRegistrationDto;
 import com.example.whosbookupdate.dto.MemberResponseDto;
 import com.example.whosbookupdate.service.MemberService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller; // @Controller 사용
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -60,15 +61,21 @@ public class MemberController {
         }
     }
 
-    @PostMapping
-    public void login(MemberRegistrationDto registrationDto, HttpSession session) {
+    @PostMapping("/login")
+    @ResponseBody
+    public ResponseEntity<MemberResponseDto> login(@RequestBody  MemberRegistrationDto registrationDto, HttpSession session) {
 
-        MemberResponseDto memberResponseDto = new MemberResponseDto();
-        MemberRegistrationDto memberRegistrationDto = memberService.findbyIdandPassword(memberResponseDto);
+        if(registrationDto.getMemberId() == null || registrationDto.getPassword() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"아이디와 비밀번호는 필수 입력 값입니다.");
+        }
 
-        if(memberRegistrationDto.getMemberId() == null || memberRegistrationDto.getPassword() == null) {
+        MemberResponseDto loginResponseDto= memberService.login(registrationDto.getMemberId(),registrationDto.getPassword());
 
-            session.setAttribute("memberRegistrationDto", memberRegistrationDto);
+        if(loginResponseDto == null) {
+            session.setAttribute("loginResponseDto",loginResponseDto);
+            return ResponseEntity.ok(loginResponseDto);
+        }else {
+            throw  new ResponseStatusException(HttpStatus.UNAUTHORIZED,"아이디 또는 비밀번호가 일치하지 않습니다");
         }
 
     }
