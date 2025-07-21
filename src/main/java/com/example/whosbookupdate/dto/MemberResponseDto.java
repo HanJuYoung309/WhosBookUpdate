@@ -8,7 +8,7 @@ import java.util.Date;
 @Data
 public class MemberResponseDto {
 
-    private String memberId;
+    private int memberId;
     private String email;
     private String nickname;
     private String password;

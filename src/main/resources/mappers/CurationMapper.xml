@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.whosbookupdate.mapper.CurationMapper">
+
+    <insert id="insertCuration" parameterType="com.example.whosbookupdate.domain.CurationVO" useGeneratedKeys="true">
+        INSERT INTO curation (
+            title,
+            member_id,
+            category_id,
+            content,
+            emoji,
+            curation_status,
+            curation_like_count
+        ) VALUES (
+                     #{title},
+                     #{memberId},
+                    #{categoryId},
+                     #{content},
+                     #{emoji},
+                     #{curationStatus},
+                     #{curationLikeCount}
+                  0
+                   )
+    </insert>
+
+
+</mapper>

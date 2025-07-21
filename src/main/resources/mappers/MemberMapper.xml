@@ -10,9 +10,11 @@
             (#{email},#{nickname},#{password},#{status},#{introduction})
     </insert>
 
-    <select id="findByMemberId" resultType="com.example.whosbookupdate.domain.MemberVO">
-        SELECT * FROM MEMBER WHERE MEMBER_ID=#{memberId}
+    <select id="findByEmail" resultType="com.example.whosbookupdate.domain.MemberVO">
+        SELECT * FROM MEMBER WHERE email=#{email}
     </select>
+
+
 
 
 </mapper>
