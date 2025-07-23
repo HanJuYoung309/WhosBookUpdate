@@ -33,7 +33,6 @@ public class CurationController {
             // 로그인하지 않은 사용자에게는 401 Unauthorized 응답을 반환
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인한 사용자만 큐레이션을 생성할 수 있습니다.");
         }
-
         CurationVO createdCuration = curationService.createCuration(curationResponseDto);
 
         return new ResponseEntity<>(createdCuration, HttpStatus.CREATED);

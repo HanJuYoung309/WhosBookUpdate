@@ -1,27 +1,24 @@
 package com.example.whosbookupdate.controller;
 
+
 import com.example.whosbookupdate.domain.MemberVO;
 import com.example.whosbookupdate.dto.MemberRegistrationDto;
 import com.example.whosbookupdate.dto.MemberResponseDto;
 import com.example.whosbookupdate.service.MemberService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller; // @Controller 사용
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 
-import java.util.Map;
 
-
+@Log4j2
 @Controller
 @RequestMapping("/member")
-@CrossOrigin(origins = "http://localhost:8081")
 public class MemberController {
 
     private final MemberService memberService;
@@ -30,62 +27,58 @@ public class MemberController {
         this.memberService = memberService;
     }
 
-    @PostMapping("/join")
-    @ResponseBody
-    public MemberResponseDto join(@RequestBody MemberRegistrationDto registrationDto) {
-        // 1. 입력 유효성 검사 (컨트롤러에서 기본적인 유효성 검사는 유지)
-        if (registrationDto.getEmail() == null || registrationDto.getPassword() == null ||
-                registrationDto.getNickname() == null) { // 닉네임도 필수라고 가정
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "필수 입력값이 누락되었습니다 (이메일, 비밀번호, 닉네임 등).");
-        }
-
-        try {
-            // 2. 회원가입 비즈니스 로직 수행
-            MemberVO registeredMember = memberService.join(registrationDto);
-
-            MemberResponseDto responseDto = new MemberResponseDto();
-            responseDto.setMemberId(registeredMember.getMemberId());
-            responseDto.setEmail(registeredMember.getEmail());
-            responseDto.setNickname(registeredMember.getNickname());
-            responseDto.setIntroduction(registeredMember.getIntroduction());
-            responseDto.setImageUrl(registeredMember.getImageUrl());
-
-            return responseDto;
-
-        } catch (DuplicateKeyException e) {
-            // 이메일 또는 ID 중복 시
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 존재하는 사용자 이메일입니다.", e);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입 중 예상치 못한 오류가 발생했습니다.", e);
-        }
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<MemberResponseDto> login(@RequestBody  MemberRegistrationDto registrationDto, HttpSession session) {
-
-        if(registrationDto.getEmail() == null || registrationDto.getPassword() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"아이디와 비밀번호는 필수 입력 값입니다.");
-        }
-
-        MemberResponseDto loginResponseDto= memberService.login(registrationDto.getEmail(),registrationDto.getPassword());
-
-        if(loginResponseDto == null) {
-            session.setAttribute("loginResponseDto",loginResponseDto);
-            return ResponseEntity.ok(loginResponseDto);
-        }else {
-            throw  new ResponseStatusException(HttpStatus.UNAUTHORIZED,"아이디 또는 비밀번호가 일치하지 않습니다");
-        }
+    @GetMapping("/")
+    public String main() {
+        System.out.println("---메인-----");
+        return "index";
 
     }
 
+    // 로그인 페이지 보기
+    @GetMapping("/login")
+    public String loginGET(String error, String logout) {
+        log.info("login get..............................");
+        log.info("logout.............................." + logout);
 
-    @PostMapping("/logout")
-    @ResponseBody
-    public ResponseEntity<String> logout(HttpSession session) {
-        session.invalidate(); // 세션 무효화
+        return "member/login";
 
-        return ResponseEntity.ok("로그아웃 성공");
     }
+
+    // 회원가입 페이지 보기
+    @GetMapping("/join")
+    public String joinGET(String error, String logout) {
+
+
+        log.info("login get..............................");
+        log.info("logout.............................." + logout);
+
+        return "member/join";
+
+//    }
+
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> memberPOST( @RequestBody  MemberRegistrationDto memberRegistrationDto) {
+
+        try{
+            MemberVO newMemberVO = memberService.join(memberRegistrationDto);
+
+            return new ResponseEntity<>(newMemberVO, HttpStatus.CREATED);
+        }catch (DuplicateKeyException e){
+            return new ResponseEntity<>("이미 등록된 이메일입니다",HttpStatus.BAD_REQUEST);
+        }catch (RuntimeException e){
+            System.err.println("회원가입 API 오류"+e.getMessage());
+            return new ResponseEntity<>("회원가입 처리중 오류가 발생했습니다.",HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch (Exception e) {
+            // 예상치 못한 모든 예외 처리
+            System.err.println("예상치 못한 회원가입 API 오류: " + e.getMessage());
+            return new ResponseEntity<>("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+
+
+
 }
