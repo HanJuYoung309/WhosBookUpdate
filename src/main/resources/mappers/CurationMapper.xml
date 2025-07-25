@@ -25,5 +25,11 @@
                    )
     </insert>
 
+    <select id="selectCuration" resultType="java.util.List">
+                 SELECT
+                     * FROM
+                           Curation
+
+    </select>
 
 </mapper>

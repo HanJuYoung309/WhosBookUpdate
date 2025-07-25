@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.concurrent.CyclicBarrier;
+
 @Service
 public class CurationService {
 
@@ -43,5 +46,11 @@ public class CurationService {
         return "PUBLIC".equals(status) || "PRIVATE".equals(status) || "DRAFT".equals(status);
     }
 
+    public List<CurationVO> getCuration() {
+
+        List<CurationVO> curationVOList= curationMapper.selectCuration();
+
+        return curationVOList;
+    }
 }
 

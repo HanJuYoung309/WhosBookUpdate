@@ -6,17 +6,22 @@ import com.example.whosbookupdate.dto.LoginRequest;
 import com.example.whosbookupdate.dto.MemberRegistrationDto;
 import com.example.whosbookupdate.dto.MemberResponseDto;
 import com.example.whosbookupdate.service.MemberService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.yaml.snakeyaml.constructor.DuplicateKeyException;
@@ -29,11 +34,16 @@ public class MemberController {
 
     private final MemberService memberService;
 
+
     private final AuthenticationManager authenticationManager;
 
-    public MemberController(MemberService memberService, AuthenticationManager authenticationManager) {
+    private final SecurityContextRepository securityContextRepository;
+
+    @Autowired
+    public MemberController(MemberService memberService, AuthenticationManager authenticationManager, SecurityContextRepository securityContextRepository) {
         this.memberService = memberService;
         this.authenticationManager = authenticationManager;
+        this.securityContextRepository = securityContextRepository;
     }
 
     @GetMapping("/")
@@ -67,6 +77,7 @@ public class MemberController {
 
     }
 
+    //회원가입 처리
     @PostMapping("/register")
     public ResponseEntity<?> memberPOST( @RequestBody  MemberRegistrationDto memberRegistrationDto) {
 
@@ -87,21 +98,36 @@ public class MemberController {
 
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-
-        try{
-            Authentication authentication= authenticationManager.authenticate
-                    (new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+    //로그인 처리
+    /**
+     * 로그인 API (POST 요청)
+     * 인증 성공 후 SecurityContext를 HttpSession에 명시적으로 저장합니다.
+     */
+    @PostMapping("/authenticate")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest,
+                                   HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
+            // 중요: SecurityContext를 HttpSession에 명시적으로 저장
+            securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response);
+
+            log.info("로그인 성공! 인증 객체: {}", authentication); // 로그인 성공 로그 추가
+            log.info("인증된 사용자 이름: {}", authentication.getName());
+            log.info("인증된 사용자 권한: {}", authentication.getAuthorities());
+
             return ResponseEntity.ok("로그인 성공");
         } catch (Exception e) {
-            return ResponseEntity.status(401).body("유효하지않은 아이디 또는 패스워드입니다");
+            log.warn("로그인 실패: {}", e.getMessage()); // 로그인 실패 로그
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 아이디 또는 패스워드입니다");
         }
-
     }
+
+
+
 
 
 
