@@ -4,3 +4,8 @@
 
 ### 기술스택
 #### SpringBoot,MySQL,Vue,Mybatis,Oauth
+
+
+### 완료된 사항
+#### 로그인
+#### 회원가입
