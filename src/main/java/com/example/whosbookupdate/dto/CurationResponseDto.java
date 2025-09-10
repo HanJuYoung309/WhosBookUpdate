@@ -9,7 +9,7 @@ import java.util.Date;
 public class CurationResponseDto {
 
     private Long curationId;
-    private String memberId;
+    private Long memberId;
     private String categoryId;
     private String title;
     private String content;

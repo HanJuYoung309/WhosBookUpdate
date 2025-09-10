@@ -36,7 +36,6 @@ public class MemberService {
         member.setNickname(registrationDto.getNickname());
         member.setIntroduction(registrationDto.getIntroduction());
         member.setPassword(encodedPassword);
-        member.setMemberId(registrationDto.getMemberId());
         member.setImage(registrationDto.getImage());
         member.setStatus(registrationDto.getStatus());
 

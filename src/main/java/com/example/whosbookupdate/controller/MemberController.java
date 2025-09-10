@@ -34,7 +34,6 @@ public class MemberController {
 
     private final MemberService memberService;
 
-
     private final AuthenticationManager authenticationManager;
 
     private final SecurityContextRepository securityContextRepository;
@@ -46,39 +45,8 @@ public class MemberController {
         this.securityContextRepository = securityContextRepository;
     }
 
-    @GetMapping("/")
-    public String main() {
-        System.out.println("---메인-----");
-        return "index";
-
-    }
-
-    // 로그인 페이지 보기
-    @GetMapping("/login")
-    public String loginGET(String error, String logout) {
-        log.info("login 페이지");
-        //log.info("logout.............................." + logout);
-
-        return "member/login";
-
-    }
-
-    // 회원가입 페이지 보기
-    @GetMapping("/join")
-    public String joinGET(String error, String logout) {
-
-
-        log.info("회원가입 페이지");
-        log.info("logout.............................." + logout);
-
-        return "member/join";
-
-//    }
-
-    }
-
     //회원가입 처리
-    @PostMapping("/register")
+    @PostMapping("/signup")
     public ResponseEntity<?> memberPOST( @RequestBody  MemberRegistrationDto memberRegistrationDto) {
 
         try{
@@ -103,7 +71,7 @@ public class MemberController {
      * 로그인 API (POST 요청)
      * 인증 성공 후 SecurityContext를 HttpSession에 명시적으로 저장합니다.
      */
-    @PostMapping("/authenticate")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest,
                                    HttpServletRequest request, HttpServletResponse response) {
         try {

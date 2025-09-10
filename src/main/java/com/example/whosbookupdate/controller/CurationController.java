@@ -2,18 +2,19 @@ package com.example.whosbookupdate.controller;
 
 import com.example.whosbookupdate.domain.CurationVO;
 import com.example.whosbookupdate.dto.CurationResponseDto;
+import com.example.whosbookupdate.security.CustomUserDetails;
 import com.example.whosbookupdate.service.CurationService;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.security.Principal;
 import java.util.List;
 @Log4j2 // 로그 추가
 @Controller
@@ -28,11 +29,33 @@ public class CurationController {
     }
 
     @PostMapping
-    @ResponseBody // @Controller 사용 시 JSON 응답을 위해 필요
+    @ResponseBody
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CurationVO> createCuration(@RequestBody CurationResponseDto curationResponseDto) {
-        CurationVO createdCuration = curationService.createCuration(curationResponseDto);
-        return new ResponseEntity<>(createdCuration, HttpStatus.CREATED);
+    public ResponseEntity<CurationVO> createCuration(@RequestBody CurationResponseDto curationResponseDto,
+                                                     Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        // principal 대신 Authentication 객체를 직접 사용
+        if (authentication.getPrincipal() instanceof CustomUserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long memberId = userDetails.getMemberId();
+
+            if (memberId == null) {
+                System.err.println("인증된 사용자 memberId가 null입니다.");
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            System.out.println("로그인한 사용자 member_id: " + memberId);
+
+            CurationVO createdCuration = curationService.createCuration(curationResponseDto, memberId);
+            return new ResponseEntity<>(createdCuration, HttpStatus.CREATED);
+        } else {
+            // principal이 CustomUserDetails 타입이 아닌 경우
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/listPage")
@@ -40,6 +63,13 @@ public class CurationController {
 
         return "curation/list";
     }
+
+    @GetMapping("/writePage")
+    public String writePage() {
+
+        return "curation/post";
+    }
+
 
 
     @GetMapping("/list")

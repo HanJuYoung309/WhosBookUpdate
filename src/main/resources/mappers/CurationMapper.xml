@@ -20,8 +20,7 @@
                      #{content},
                      #{emoji},
                      #{curationStatus},
-                     #{curationLikeCount}
-                  0
+                0
                    )
     </insert>
 

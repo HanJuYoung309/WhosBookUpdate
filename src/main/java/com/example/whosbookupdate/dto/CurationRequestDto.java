@@ -6,7 +6,7 @@ import lombok.Data;
 public class CurationRequestDto {
 
     private String title;
-    private int memberId;
+    private Long memberId;
     private String categoryId;
     private String content;
     private String emoji;

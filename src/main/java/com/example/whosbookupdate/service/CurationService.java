@@ -1,14 +1,17 @@
 package com.example.whosbookupdate.service;
 
 import com.example.whosbookupdate.domain.CurationVO;
+import com.example.whosbookupdate.dto.CurationRequestDto;
 import com.example.whosbookupdate.dto.CurationResponseDto;
 import com.example.whosbookupdate.mapper.CurationMapper;
+import com.example.whosbookupdate.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.CyclicBarrier;
 
 @Service
 public class CurationService {
@@ -20,26 +23,6 @@ public class CurationService {
         this.curationMapper = curationMapper;
     }
 
-    @Transactional
-    public CurationVO createCuration(CurationResponseDto curationResponseDto) {
-
-        CurationVO curationVO = new CurationVO();
-        curationVO.setTitle(curationResponseDto.getTitle());
-        curationVO.setMemberId(curationResponseDto.getMemberId());
-        curationVO.setContent(curationResponseDto.getContent());
-        curationVO.setEmoji(curationResponseDto.getEmoji());
-        curationVO.setCurationStatus(curationResponseDto.getCurationStatus());
-        curationVO.setCurationLikeCount(curationResponseDto.getCurationLikeCount());
-
-        if(!isValidCurationStatus(curationResponseDto.getCurationStatus())) {
-            throw new IllegalArgumentException("유효하지 않은 큐레이션 상태입니다.");
-        }
-
-        curationMapper.insertCuration(curationVO);
-
-        return curationVO;
-
-    }
 
     private boolean isValidCurationStatus(String status){
 
@@ -51,6 +34,28 @@ public class CurationService {
         List<CurationVO> curationVOList= curationMapper.selectCuration();
 
         return curationVOList;
+    }
+
+
+    @Transactional
+    public CurationVO createCuration(CurationResponseDto curationResponseDto, Long memberId) {
+
+        // 1. DTO 객체를 VO(Value Object)로 변환
+        CurationVO curationVO = new CurationVO();
+        curationVO.setTitle(curationResponseDto.getTitle());
+        curationVO.setContent(curationResponseDto.getContent());
+        curationVO.setCategoryId(curationResponseDto.getCategoryId());
+        curationVO.setEmoji(curationResponseDto.getEmoji());
+        curationVO.setCurationStatus("PUBLIC");
+        curationVO.setCurationLikeCount(0);
+
+        curationVO.setMemberId(memberId);
+
+        // 3. Mapper를 사용하여 데이터베이스에 CurationVO 삽입
+        curationMapper.insertCuration(curationVO);
+
+        // 4. 삽입된 객체 반환 (DB에서 자동 생성된 ID 등을 포함할 수 있음)
+        return curationVO;
     }
 }
 

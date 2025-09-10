@@ -8,7 +8,7 @@ import java.util.List;
 
 @Mapper
 public interface CurationMapper {
-    void insertCuration(CurationVO curationVO);
+    int insertCuration(CurationVO curationVO);
 
     List<CurationVO> selectCuration();
 }
