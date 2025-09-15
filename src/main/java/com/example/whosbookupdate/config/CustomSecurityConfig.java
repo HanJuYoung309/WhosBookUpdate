@@ -47,6 +47,7 @@ public class CustomSecurityConfig {
                 // 2. 폼 로그인(Form Login) 설정
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/member/**").permitAll()
+                        .requestMatchers("/api/books/search").permitAll()
                         .anyRequest().authenticated() // ✅ 모든 요청에 대한 규칙을 마지막에 정의
 
                 )

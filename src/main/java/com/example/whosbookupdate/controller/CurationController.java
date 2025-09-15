@@ -37,14 +37,12 @@ public class CurationController {
         if (authentication == null || !authentication.isAuthenticated()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-
-        // principal 대신 Authentication 객체를 직접 사용
         if (authentication.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             Long memberId = userDetails.getMemberId();
 
             if (memberId == null) {
-                System.err.println("인증된 사용자 memberId가 null입니다.");
+                System.err.println("memberId is null");
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
@@ -57,19 +55,6 @@ public class CurationController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    @GetMapping("/listPage")
-    public String listPage() {
-
-        return "curation/list";
-    }
-
-    @GetMapping("/writePage")
-    public String writePage() {
-
-        return "curation/post";
-    }
-
 
 
     @GetMapping("/list")

@@ -42,14 +42,13 @@ public class CurationService {
 
         // 1. DTO 객체를 VO(Value Object)로 변환
         CurationVO curationVO = new CurationVO();
+        curationVO.setMemberId(memberId);
         curationVO.setTitle(curationResponseDto.getTitle());
         curationVO.setContent(curationResponseDto.getContent());
         curationVO.setCategoryId(curationResponseDto.getCategoryId());
         curationVO.setEmoji(curationResponseDto.getEmoji());
         curationVO.setCurationStatus("PUBLIC");
         curationVO.setCurationLikeCount(0);
-
-        curationVO.setMemberId(memberId);
 
         // 3. Mapper를 사용하여 데이터베이스에 CurationVO 삽입
         curationMapper.insertCuration(curationVO);
