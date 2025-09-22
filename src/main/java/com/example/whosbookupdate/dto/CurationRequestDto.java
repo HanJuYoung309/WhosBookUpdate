@@ -1,6 +1,9 @@
 package com.example.whosbookupdate.dto;
 
+import com.example.whosbookupdate.domain.BookVO;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class CurationRequestDto {
@@ -12,7 +15,7 @@ public class CurationRequestDto {
     private String emoji;
     private String curationStatus;
     private int curationLikeCount;
-
+    private List<BookVO> books;
 
 
 }

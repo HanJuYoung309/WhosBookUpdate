@@ -42,22 +42,20 @@ public class CustomSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
-
                 .cors(cors-> cors.configurationSource(corsConfigurationSource()))
-                // 2. 폼 로그인(Form Login) 설정
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/member/**").permitAll()
-                        .requestMatchers("/api/books/search").permitAll()
-                        .anyRequest().authenticated() // ✅ 모든 요청에 대한 규칙을 마지막에 정의
-
+                        .anyRequest().permitAll()  // 모든 요청을 허용
                 )
-                // JWT나 다른 stateless 인증을 사용할 것이므로 세션 비활성화
-                .csrf(AbstractHttpConfigurer::disable);
-
+                .logout(logout->
+                        logout.logoutUrl("/logout")
+                                .logoutSuccessUrl("/")
+                                .invalidateHttpSession(true)
+                                .deleteCookies("JSESSIONID")
+                );
 
         return http.build();
     }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

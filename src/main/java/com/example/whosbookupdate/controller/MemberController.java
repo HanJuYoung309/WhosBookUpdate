@@ -3,6 +3,7 @@ package com.example.whosbookupdate.controller;
 
 import com.example.whosbookupdate.domain.MemberVO;
 import com.example.whosbookupdate.dto.LoginRequest;
+import com.example.whosbookupdate.dto.MemberInfoDTO;
 import com.example.whosbookupdate.dto.MemberRegistrationDto;
 import com.example.whosbookupdate.dto.MemberResponseDto;
 import com.example.whosbookupdate.service.MemberService;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +30,7 @@ import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 
 
 @Log4j2
-@Controller
+@RestController
 @RequestMapping("/member")
 public class MemberController {
 
@@ -64,6 +66,33 @@ public class MemberController {
             return new ResponseEntity<>("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+    }
+
+    @GetMapping("/me")
+    public MemberInfoDTO getMyInfo() {
+        // 현재 인증 정보를 가져옵니다.
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 인증되지 않았거나, Principal이 null인 경우 로그아웃 상태로 간주하고 빈 DTO를 반환
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new MemberInfoDTO(); // 로그인되지 않았을 때 빈 DTO를 반환
+        }
+
+        // 로그인된 사용자의 Principal 객체에서 사용자 정보를 추출합니다.
+        Object principal = authentication.getPrincipal();
+
+        // Principal이 UserDetails 타입인지 확인
+        if (principal instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) principal;
+
+            // 임시로 사용자 이름만 DTO에 담아서 반환
+            MemberInfoDTO memberInfo = new MemberInfoDTO();
+            memberInfo.setUsername(userDetails.getUsername()); // DTO에 username 필드가 있다고 가정
+            return memberInfo;
+        }
+
+        // 그 외의 경우 (예외 처리)
+        return new MemberInfoDTO();
     }
 
     //로그인 처리

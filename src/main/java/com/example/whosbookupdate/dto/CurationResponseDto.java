@@ -1,9 +1,11 @@
 package com.example.whosbookupdate.dto;
 
 
+import com.example.whosbookupdate.domain.BookVO;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class CurationResponseDto {
@@ -18,4 +20,6 @@ public class CurationResponseDto {
     private String curationLikeCount;
     private Date createdAt;
     private Date updatedAt;
+    private List<BookVO> books;
+
 }

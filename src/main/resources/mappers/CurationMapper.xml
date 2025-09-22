@@ -4,6 +4,12 @@
 
 <mapper namespace="com.example.whosbookupdate.mapper.CurationMapper">
 
+    <insert id="insertBook">
+        INSERT INTO BOOK(book_id,title,authors, thumbnail,url,isbn,publisher)
+        VALUES(#{bookId},#{title},#{authors},#{thumbnail},#{url})
+    </insert>
+
+
     <insert id="insertCuration" parameterType="com.example.whosbookupdate.domain.CurationVO" useGeneratedKeys="true">
         INSERT INTO curation (
             title,
@@ -16,12 +22,16 @@
         ) VALUES (
                      #{title},
                      #{memberId},
-                    #{categoryId},
+                     #{categoryId},
                      #{content},
                      #{emoji},
                      #{curationStatus},
                 0
                    )
+    </insert>
+    <insert id="insertCurationBook">
+
+
     </insert>
 
     <select id="selectCuration" resultType="java.util.List">
@@ -29,6 +39,12 @@
                      * FROM
                            Curation
 
+    </select>
+    <select id="getBook" resultType="com.example.whosbookupdate.dto.BookDto">
+           SELECT * FROM BOOK WHERE BOOK_ID=#{bookId}
+    </select>
+    <select id="getBooksByIsbnList" resultType="com.example.whosbookupdate.domain.BookVO">
+        SELECT * FROM BOOK WHERE isbn= #{isbn}
     </select>
 
 </mapper>
