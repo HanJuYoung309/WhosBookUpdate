@@ -47,6 +47,11 @@ public class CustomSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .anyRequest().permitAll()  // 모든 요청을 허용
                 )
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                                .maximumSessions(1)
+                                .maxSessionsPreventsLogin(false)
+                )
                 .logout(logout->
                         logout.logoutUrl("/logout")
                                 .logoutSuccessUrl("/")

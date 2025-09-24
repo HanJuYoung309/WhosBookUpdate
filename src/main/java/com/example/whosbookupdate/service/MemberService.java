@@ -72,7 +72,17 @@ public class MemberService {
     }
 
 
+    public MemberVO getMemberById(Long memberId) {
+        // MemberMapper를 통해 memberId로 회원 정보를 조회합니다.
+        // findByMemberId 메서드는 MemberMapper 인터페이스에 정의되어 있어야 합니다.
+        //log.info("회원 ID로 정보 조회: {}", memberId);
+        MemberVO member = memberMapper.findByMemberId(memberId);
 
+        if (member == null) {
+           // log.warn("회원 ID {}에 해당하는 회원을 찾을 수 없습니다.", memberId);
+        }
 
+        return member;
+    }
 
 }

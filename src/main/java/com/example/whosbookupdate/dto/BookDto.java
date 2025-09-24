@@ -12,7 +12,7 @@ public class BookDto {
     private String authors;
     private String thumbnail;
     private String url;
-    private String isbns;
+    private String isbn;
 
 
 

@@ -8,5 +8,10 @@ import org.apache.ibatis.annotations.Mapper;
 public interface MemberMapper {
     int insertMember(MemberVO member);
 
-    MemberVO findByEmail(String email);
+    MemberVO findByEmail(String username);
+
+
+    MemberVO findByMemberId(Long memberId);
+
+    MemberVO findByUserName(String username);
 }

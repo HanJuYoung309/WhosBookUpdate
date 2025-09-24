@@ -6,6 +6,7 @@ import com.example.whosbookupdate.domain.CurationBookVO;
 import com.example.whosbookupdate.domain.CurationVO;
 import com.example.whosbookupdate.dto.BookDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -21,5 +22,5 @@ public interface CurationMapper {
 
     void insertCurationBook(CurationBookVO curationBook);
 
-    public List<BookVO> getBooksByIsbnList(List<String> isbns);
+     List<BookVO> getBooksByIsbnList(@Param("isbn") List<String> isbnList);
 }

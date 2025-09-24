@@ -4,47 +4,46 @@
 
 <mapper namespace="com.example.whosbookupdate.mapper.CurationMapper">
 
-    <insert id="insertBook">
-        INSERT INTO BOOK(book_id,title,authors, thumbnail,url,isbn,publisher)
-        VALUES(#{bookId},#{title},#{authors},#{thumbnail},#{url})
+    <insert id="insertBook" parameterType="com.example.whosbookupdate.domain.BookVO"
+            useGeneratedKeys="true" keyProperty="bookId">
+        <!-- 컬럼 목록에서 중복된 'isbn'과 VALUES에서 중복된 '#{isbn}'을 하나씩 제거합니다. -->
+        INSERT INTO book (isbn, title, authors, thumbnail, url, publisher)
+        VALUES (#{isbn}, #{title}, #{authors}, #{thumbnail}, #{url}, #{publisher})
     </insert>
 
 
-    <insert id="insertCuration" parameterType="com.example.whosbookupdate.domain.CurationVO" useGeneratedKeys="true">
-        INSERT INTO curation (
-            title,
-            member_id,
-            category_id,
-            content,
-            emoji,
-            curation_status,
-            curation_like_count
-        ) VALUES (
-                     #{title},
-                     #{memberId},
-                     #{categoryId},
-                     #{content},
-                     #{emoji},
-                     #{curationStatus},
-                0
-                   )
-    </insert>
-    <insert id="insertCurationBook">
-
-
+    <insert id="insertCuration" parameterType="com.example.whosbookupdate.domain.CurationVO"
+            useGeneratedKeys="true" keyProperty="curationId">
+        INSERT INTO Curation (member_id, title, content, category_id, emoji, curation_status, curation_like_count)
+        VALUES (#{memberId}, #{title}, #{content}, #{categoryId}, #{emoji}, #{curationStatus}, 0)
     </insert>
 
-    <select id="selectCuration" resultType="java.util.List">
-                 SELECT
-                     * FROM
-                           Curation
 
-    </select>
+    <insert id="insertCurationBook" parameterType="com.example.whosbookupdate.domain.CurationBookVO"
+            useGeneratedKeys="true" keyProperty="curationId">
+        INSERT INTO book_curation ( book_id, curation_id)
+        VALUES ( #{bookId}, #{curationId})
+    </insert>
+
+
     <select id="getBook" resultType="com.example.whosbookupdate.dto.BookDto">
            SELECT * FROM BOOK WHERE BOOK_ID=#{bookId}
     </select>
+
     <select id="getBooksByIsbnList" resultType="com.example.whosbookupdate.domain.BookVO">
-        SELECT * FROM BOOK WHERE isbn= #{isbn}
+        SELECT * FROM book
+        WHERE isbn IN
+        <foreach item="isbn" collection="param1" open="(" separator="," close=")">
+            #{isbn}
+        </foreach>
     </select>
+
+    <select id="selectCuration" resultType="java.util.List">
+        SELECT
+            * FROM
+            Curation
+
+    </select>
+
 
 </mapper>

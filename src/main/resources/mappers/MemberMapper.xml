@@ -5,10 +5,10 @@
 
 <mapper namespace="com.example.whosbookupdate.mapper.MemberMapper">
 
-    <resultMap id="memberResultMap" type="com.example.whosbookupdate.domain.MemberVO">
-        <id property="memberId" column="member_id" />
-        <result property="email" column="username" />
-        <result property="password" column="password" />
+    <resultMap id="MemberResultMap" type="com.example.whosbookupdate.domain.MemberVO">
+        <id property="memberId" column="member_id"/> <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="nickname" column="nickname"/>
     </resultMap>
 
     <insert id="insertMember" parameterType="com.example.whosbookupdate.domain.MemberVO">
@@ -18,11 +18,17 @@
             (#{email},#{nickname},#{password},#{status},#{introduction})
     </insert>
 
-    <select id="findByEmail" resultType="com.example.whosbookupdate.domain.MemberVO">
-        SELECT * FROM MEMBER WHERE email=#{email}
+
+    <select id="findByMemberId" resultType="com.example.whosbookupdate.domain.MemberVO">
+        SELECT * FROM MEMBER WHERE MEMBER_ID=#{memberId}
+    </select>
+
+    <select id="findByUserName" resultType="com.example.whosbookupdate.domain.MemberVO">
+        SELECT * FROM member where nickname=#{nickname}
     </select>
 
 
-
-
+    <select id="findByEmail" resultMap="MemberResultMap">
+        SELECT * FROM member WHERE email = #{email}
+    </select>
 </mapper>

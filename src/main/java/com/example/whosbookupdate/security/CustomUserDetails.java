@@ -7,22 +7,27 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
-
 public class CustomUserDetails implements UserDetails {
-    @Getter
     private Long memberId;
-    private String email;
+    private String username;
     private String password;
+    private Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(MemberVO member) {
-        this.memberId = member.getMemberId();
-        this.email = member.getEmail();
-        this.password = member.getPassword();
+    public CustomUserDetails(Long memberId, String username, String password,
+                             Collection<? extends GrantedAuthority> authorities) {
+        this.memberId = memberId;
+        this.username = username;
+        this.password = password;
+        this.authorities = authorities;
+    }
+
+    public Long getMemberId() {
+        return memberId;
     }
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override
@@ -32,7 +37,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return authorities;
     }
 
     @Override

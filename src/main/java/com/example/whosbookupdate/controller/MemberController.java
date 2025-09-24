@@ -28,6 +28,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 
+import java.util.Map;
+
 
 @Log4j2
 @RestController
@@ -67,63 +69,84 @@ public class MemberController {
         }
 
     }
-
     @GetMapping("/me")
     public MemberInfoDTO getMyInfo() {
         // 현재 인증 정보를 가져옵니다.
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // 인증되지 않았거나, Principal이 null인 경우 로그아웃 상태로 간주하고 빈 DTO를 반환
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return new MemberInfoDTO(); // 로그인되지 않았을 때 빈 DTO를 반환
+        // 인증되지 않았거나, Principal이 null인 경우 빈 DTO를 반환
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+            log.info("사용자 인증 정보 없음. 빈 DTO 반환.");
+            return new MemberInfoDTO();
         }
 
-        // 로그인된 사용자의 Principal 객체에서 사용자 정보를 추출합니다.
-        Object principal = authentication.getPrincipal();
+        // 로그인된 사용자의 Principal 객체에서 memberId를 추출합니다.
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String memberIdStr = userDetails.getUsername(); // CustomUserDetailsService에서 memberId를 username으로 설정함
 
-        // Principal이 UserDetails 타입인지 확인
-        if (principal instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) principal;
+        // memberId를 Long 타입으로 변환
+        Long memberId=1L;
+        try {
+            memberId = Long.parseLong(memberIdStr);
+        } catch (NumberFormatException e) {
+            log.error("Member ID 변환 실패: {}", memberIdStr, e);
+            return new MemberInfoDTO();
+        }
 
-            // 임시로 사용자 이름만 DTO에 담아서 반환
+        // 서비스 레이어를 통해 회원 정보를 조회합니다.
+        MemberVO member = memberService.getMemberById(memberId);
+
+        if (member != null) {
+            // 회원 정보가 있다면 DTO에 담아 반환
             MemberInfoDTO memberInfo = new MemberInfoDTO();
-            memberInfo.setUsername(userDetails.getUsername()); // DTO에 username 필드가 있다고 가정
+            memberInfo.setUsername(member.getNickname()); // 실제 사용자 이름으로 설정
+            // 필요한 다른 필드도 설정
             return memberInfo;
         }
 
-        // 그 외의 경우 (예외 처리)
+        // 회원 정보를 찾지 못한 경우
+        log.warn("ID {}에 해당하는 회원을 찾을 수 없습니다.", memberId);
         return new MemberInfoDTO();
     }
 
-    //로그인 처리
-    /**
-     * 로그인 API (POST 요청)
-     * 인증 성공 후 SecurityContext를 HttpSession에 명시적으로 저장합니다.
-     */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest,
-                                   HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+            // 수동으로 인증 처리
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
 
+            Authentication authentication = authenticationManager.authenticate(authToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // 중요: SecurityContext를 HttpSession에 명시적으로 저장
-            securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response);
+            // 세션 생성
+            HttpSession session = request.getSession(true);
+            session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
-            log.info("로그인 성공! 인증 객체: {}", authentication); // 로그인 성공 로그 추가
-            log.info("인증된 사용자 이름: {}", authentication.getName());
-            log.info("인증된 사용자 권한: {}", authentication.getAuthorities());
+            System.out.println("로그인 성공 - SessionId: " + session.getId());
+            System.out.println("인증 정보: " + authentication.getPrincipal());
 
-            return ResponseEntity.ok("로그인 성공");
+            return ResponseEntity.ok().body(Map.of("success", true, "sessionId", session.getId()));
+
         } catch (Exception e) {
-            log.warn("로그인 실패: {}", e.getMessage()); // 로그인 실패 로그
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 아이디 또는 패스워드입니다");
+            System.out.println("로그인 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
 
+    @GetMapping("/check")
+    public ResponseEntity<?> checkAuth(HttpServletRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        HttpSession session = request.getSession(false);
 
+        return ResponseEntity.ok(Map.of(
+                "sessionId", session != null ? session.getId() : "null",
+                "isAuthenticated", auth != null && auth.isAuthenticated(),
+                "principal", auth != null ? auth.getPrincipal().toString() : "null",
+                "name", auth != null ? auth.getName() : "null",
+                "authorities", auth != null ? auth.getAuthorities().toString() : "null"
+        ));
+    }
 
 
 
